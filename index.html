@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GestureXperience</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <h1>GestureXperience</h1>
+        <ul>
+            <li><a href="#gesture-control">Gesture Control</a></li>
+            <li><a href="#voice-commands">Voice Commands</a></li>
+            <li><a href="#whiteboard">Whiteboard</a></li>
+            <li><a href="#emotion-detection">Emotion Detection</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section id="gesture-control">
+            <h2>Gesture Control</h2>
+            <div id="gestures">Loading gestures...</div>
+        </section>
+        <section id="voice-commands">
+            <h2>Voice Commands</h2>
+            <div id="commands">Loading commands...</div>
+        </section>
+        <section id="whiteboard">
+            <h2>Virtual Whiteboard</h2>
+            <canvas id="whiteboard" style="border: 1px solid black; width: 100%; height: 500px;"></canvas>
+        </section>
+        <section id="emotion-detection">
+            <h2>Emotion Detection</h2>
+            <p>Real-time emotion detection based on facial expressions.</p>
+        </section>
+    </main>
+
+    <!-- JavaScript Code -->
+    <script>
+        // Main Script
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select canvas element
+            const canvas = document.getElementById('whiteboard');
+            if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
+                console.error('Canvas element not found or incorrect type');
+                return;
+            }
+
+            const context = canvas.getContext('2d');
+            let drawing = false;
+
+            // Adjust canvas size based on its visible width and height
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+
+            // Drawing functionality
+            const startDrawing = (e) => {
+                drawing = true;
+                context.beginPath();
+                context.moveTo(e.offsetX, e.offsetY);
+            };
+
+            const draw = (e) => {
+                if (!drawing) return;
+                context.lineTo(e.offsetX, e.offsetY);
+                context.stroke();
+            };
+
+            const stopDrawing = () => {
+                drawing = false;
+                context.closePath();
+            };
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+
+            // Fetch gestures and display
+            fetch('http://localhost:80/api/gestures')
+                .then(response => response.json())
+                .then(data => {
+                    const gestureDiv = document.getElementById('gestures');
+                    gestureDiv.innerHTML = data.map(gesture => `<p>${gesture.name}</p>`).join('');
+                })
+                .catch(error => console.error('Error fetching gestures:', error));
+
+            // Fetch voice commands and display
+            fetch('http://localhost:80/api/voicecommands')
+                .then(response => response.json())
+                .then(data => {
+                    const commandsDiv = document.getElementById('commands');
+                    commandsDiv.innerHTML = data.map(command => `<p>${command.command}</p>`).join('');
+                })
+                .catch(error => console.error('Error fetching voice commands:', error));
+
+            // TensorFlow.js Hand Pose Detector
+            async function initializeDetector() {
+                const model = handPoseDetection.SupportedModels.MediaPipeHands;
+                const detectorConfig = {
+                    runtime: 'mediapipe', 
+                    solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands'
+                };
+                try {
+                    const detector = await handPoseDetection.createDetector(model, detectorConfig);
+
+                    async function detectGesture() {
+                        const video = document.createElement('video');
+                        video.style.display = 'none';
+                        document.body.appendChild(video);
+                        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        video.srcObject = stream;
+                        await video.play();
+                        const hands = await detector.estimateHands(video);
+                        if (hands.length > 0) {
+                            console.log('Gesture detected:', hands[0]);
+                        }
+                    }
+
+                    setInterval(detectGesture, 1000);
+                } catch (error) {
+                    console.error("Error initializing hand pose detector:", error);
+                }
+            }
+
+            initializeDetector();
+        });
+    </script>
+</body>
+</html>
