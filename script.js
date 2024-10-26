@@ -62,10 +62,10 @@ document.addEventListener('DOMContentLoaded', function() {
         runtime: 'mediapipe', // or 'tfjs'
         solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands'
     };
-    
+
     (async () => {
         const detector = await handPoseDetection.createDetector(model, detectorConfig);
-        
+
         async function detectGesture() {
             const video = document.createElement('video');
             video.style.display = 'none';
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Gesture detected:', hands[0]);
             }
         }
-        
+
         // Call detectGesture periodically
         setInterval(detectGesture, 1000);
     })();

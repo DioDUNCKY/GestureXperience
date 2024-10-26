@@ -7,7 +7,7 @@ from PIL import Image
 import streamlit as st
 
 st.set_page_config(layout="wide")
-st.image('Gesture.jpeg')
+st.image('MathGestures.png')
 
 col1, col2 = st.columns([3, 2])
 with col1:

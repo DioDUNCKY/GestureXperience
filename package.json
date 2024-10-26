@@ -8,7 +8,11 @@
     },
     "dependencies": {
         "@tensorflow-models/hand-pose-detection": "^0.0.1",
-        "axios": "^1.7.7"
+        "axios": "^1.7.7",
+        "cors": "^2.8.5",
+        "express": "^4.21.1",
+        "mysql2": "^3.11.3",
+        "sequelize": "^6.37.5"
     },
     "devDependencies": {
         "@babel/core": "^7.25.9",
